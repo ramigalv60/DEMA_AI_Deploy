@@ -1,2 +1,4 @@
-flask
-keras
+fastapi
+uvicorn
+tensorflow
+pillow
