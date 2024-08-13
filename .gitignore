@@ -1,3 +1,2 @@
-my_flask_app/models/*
-/.venv
-/my_flask_app/venv
+models/*
+/venv
