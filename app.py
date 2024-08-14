@@ -8,9 +8,7 @@ from PIL import Image
 from tensorflow.keras.models import load_model
 
 class CFG:
-    image_size = (224, 224)
-    class_names = ['Malignant', 'Benign']
-    num_classes = 1
+    image_size = (224, 224)  # Example image size, adjust as needed
     seed = 42
 
 tf.random.set_seed(CFG.seed)
