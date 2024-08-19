@@ -5,6 +5,7 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from PIL import Image
 from tensorflow.keras.models import load_model
+from tensorflow.keras import layers
 from io import BytesIO
 
 class CFG:
@@ -16,8 +17,8 @@ tf.random.set_seed(CFG.seed)
 app = FastAPI()
 
 # Load the model without custom objects
-model = load_model('models/model.h5')
-#tf.keras.layers.TFSMLayer("FOLDER_NAME", call_endpoint="serving_default")
+#model = load_model('models/saved_model')
+model = layers.TFSMLayer('models/saved_model', call_endpoint="serving_default")
 
 def load_and_preprocess_image(image_data):
     image = Image.open(BytesIO(image_data))

@@ -3,3 +3,5 @@ uvicorn
 tensorflow
 pillow
 pandas
+python-multipart
+h5py
