@@ -6,38 +6,51 @@ from pydantic import BaseModel
 from PIL import Image
 from tensorflow.keras.models import load_model
 from tensorflow.keras import layers
+from tensorflow.keras.preprocessing.image import img_to_array
 from io import BytesIO
 
 class CFG:
-    image_size = (224, 224)  # Example image size, adjust as needed
+    image_size_melanoma = (224, 224) 
+    image_size_lesion = (255, 255)
     seed = 42
 
 tf.random.set_seed(CFG.seed)
 
+# Define the classes based on the model
+classes = ['Enfeksiyonel', 'Ekzama', 'Akne', 'Pigment', 'Benign', 'Malign']
+
 app = FastAPI()
 
 # Load the model without custom objects
-#model = load_model('models/saved_model')
-model = layers.TFSMLayer('models/saved_model', call_endpoint="serving_default")
+#model_melanoma = layers.TFSMLayer('modelos/saved_model_melanoma', call_endpoint="serving_default")
+#model_lesiones = layers.TFSMLayer('modelos/saved_model_lesiones', call_endpoint="serving_default")
 
-def load_and_preprocess_image(image_data):
+def load_and_preprocess_image_melanoma(image_data):
     image = Image.open(BytesIO(image_data))
-    image = image.resize(CFG.image_size)
-    image = np.array(image) / 255.0  # Manually normalize image
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
-    return image
+
+    image = image.convert('RGB')
+    image = image.resize(CFG.image_size_melanoma)
+    image_array = img_to_array(image)
+    image_array = image_array / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+    return image_array
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the model prediction API!"}
 
-@app.post("/predict")
+@app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
-    image_data = await file.read()
-    image = load_and_preprocess_image(image_data)
-    prediction = model.predict(image)
-    binary_prediction = int(prediction[0][0] > 0.5)
-    return {"prediction": binary_prediction}
+    try:
+        model = load_model('models/my_model.keras')
+        image_data = await file.read()
+        image = load_and_preprocess_image_melanoma(image_data)
+        prediction = model.predict(image)
+        prediction = prediction.tolist()
+        return {"prediction": prediction}
+        #return {"prediction": classes[np.argmax(prediction)]}
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn
